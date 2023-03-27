@@ -12,8 +12,8 @@ beforeEach(() => {
     return connection.end();
   });
 
-  describe("/api/topics", () => {
-    describe("GET", () => {
+
+    describe("GET /api/topics", () => {
       test("200: GET responds with an array of topic objects", () => {
         return request(app)
           .get("/api/topics")
@@ -38,4 +38,20 @@ beforeEach(() => {
           });
       });
     });
-});
+
+    // describe("GET /api/articles/:articles_id", () => {
+    //     test("200: GET responds with relevant object according to article_id, with specified properties ", () => {
+    //       return request(app)
+    //         .get("/api/articles/")
+    //         .expect(200)
+    //         .then(({ body }) => {
+    //           const { topics } = body;
+    //           expect(topics.length).toBe(3);
+    //           topics.forEach((topic) => {
+    //             expect(topic).toMatchObject({
+    //               description: expect.any(String),
+    //               slug: expect.any(String)
+    //             });
+    //           });
+    //         });
+    //     });
