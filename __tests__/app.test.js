@@ -29,7 +29,7 @@ beforeEach(() => {
             });
           });
       });
-      test("GET 400: responds with bad request if invalid end point", () => {
+      test("GET 404: responds with bad request if invalid end point", () => {
         return request(app)
           .get("/api/topic")
           .expect(404)
