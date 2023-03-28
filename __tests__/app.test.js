@@ -24,12 +24,12 @@ describe("GET /api/topics", () => {
         });
       });
   });
-  test("GET 404: responds with bad request if invalid end point", () => {
+  test("GET 400: responds with bad request if invalid end point", () => {
     return request(app)
       .get("/api/topic")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request");
+        expect(body.msg).toBe("Path not found");
       });
   });
 });
@@ -102,16 +102,71 @@ describe("GET /api/articles", () => {
         expect(articles).toBeSortedBy("created_at", { descending: true });
       });
   });
-  test("GET 404: responds with bad request if invalid end point", () => {
+  test("GET 404: responds with message and error for invalid end point", () => {
     return request(app)
       .get("/api/article")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request");
+        expect(body.msg).toBe("Path not found");
       });
   });
 });
 
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: GET responds with  an array of comment objects for the given article_id", () => {
+    return request(app)
+      .get("/api/articles/3/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments.length).toBe(2);
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("200: GET responds with an array of comment objects ordered by date in descending order, most recent first", () => {
+    return request(app)
+      .get("/api/articles/3/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("GET 400: article_id does not exist", () => {
+    return request(app)
+      .get("/api/articles/not-a-num/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("GET 404: responds with message and error if input article_id does not have an article attached", () => {
+    return request(app)
+      .get("/api/articles/3000/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+  test("200: GET responds with an empty array when queried passed an article_id that exists, but has no associated comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toEqual([]);
+      });
+  });
+});
 
 
 afterAll(() => {
