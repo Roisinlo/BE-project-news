@@ -1,6 +1,6 @@
 const express = require("express");
 const { getTopics } = require("./controllers/topics.controller");
-const { getArticleById } = require("./controllers/articles.controller");
+const { getArticleById, getArticles } = require("./controllers/articles.controller");
 const {
   handlePSQL400s,
   handleCustomErrors,
@@ -10,6 +10,8 @@ const app = express();
 
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:articles_id", getArticleById);
+app.get("/api/articles", getArticles);
+
 app.use(handleCustomErrors);
 app.use(handlePSQL400s);
 
