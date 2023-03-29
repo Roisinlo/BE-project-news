@@ -141,7 +141,7 @@ describe("GET /api/articles/:article_id/comments", () => {
         expect(comments).toBeSortedBy("created_at", { descending: true });
       });
   });
-  test("GET 400: article_id does not exist", () => {
+  test("GET 400:  invalid ID, does not exist", () => {
     return request(app)
       .get("/api/articles/not-a-num/comments")
       .expect(400)
