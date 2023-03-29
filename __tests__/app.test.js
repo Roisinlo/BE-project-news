@@ -24,12 +24,12 @@ describe("GET /api/topics", () => {
         });
       });
   });
-  test("GET 400: responds with bad request if invalid end point", () => {
+  test("GET 404: responds with bad request if invalid end point", () => {
     return request(app)
       .get("/api/topic")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Path not found");
+        expect(body.msg).toBe("status 404: Path not found");
       });
   });
 });
@@ -58,15 +58,15 @@ describe("GET /api/articles/:articles_id", () => {
       .get("/api/articles/324")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Article not found");
+        expect(body.msg).toBe("status 404: Article not found");
       });
   });
-  test("GET 400: responds with bad request if input article id is not a number", () => {
+  test("GET 400: responds with error message if input article id is not a number", () => {
     return request(app)
       .get("/api/articles/notanum")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request");
+        expect(body.msg).toBe("status 400: Invalid article ID");
       });
   });
 });
@@ -107,7 +107,7 @@ describe("GET /api/articles", () => {
       .get("/api/article")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Path not found");
+        expect(body.msg).toBe("status 404: Path not found");
       });
   });
 });
@@ -141,12 +141,12 @@ describe("GET /api/articles/:article_id/comments", () => {
         expect(comments).toBeSortedBy("created_at", { descending: true });
       });
   });
-  test("GET 400:  invalid ID, does not exist", () => {
+  test("GET 400:  invalid ID not a nu,ber, responds with error message", () => {
     return request(app)
       .get("/api/articles/not-a-num/comments")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Bad request");
+        expect(body.msg).toBe("status 400: Invalid article ID");
       });
   });
   test("GET 404: responds with message and error if input article_id does not have an article attached", () => {
@@ -154,7 +154,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/3000/comments")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("Article not found");
+        expect(body.msg).toBe("status 404: Article not found");
       });
   });
   test("200: GET responds with an empty array when queried passed an article_id that exists, but has no associated comments", () => {
@@ -168,6 +168,67 @@ describe("GET /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("POST", () => {
+  test("POST 201: adds a new comment using username and body from request", () => {
+    const testInput = {
+      username: "butter_bridge",
+      body: "really important words about thoughts"
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(testInput)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: expect.any(String),
+          author: expect.any(String),
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String)
+        });
+      });
+  });
+  test("POST 400: responds with invalid request error message when post request is sent with an empty object", () => {
+    const testInput = {}
+      return request(app)
+      .post("/api/articles/1/comments")
+      .send(testInput)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: invalid request, missing information");
+      })
+  })
+  test("POST 400: responds with invalid request error message when post request is sent with an empty property in the object", () => {
+    const testInput = {
+      username: "butter_bridge", 
+    }
+      return request(app)
+      .post("/api/articles/1/comments")
+      .send(testInput)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: invalid request, missing information");
+      })
+  })
+  test("GET 404: responds with message and error if input article_id does not have an article attached", () => {
+    return request(app)
+      .get("/api/articles/300/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Article not found");
+      });
+  });
+  test("GET 404: responds with message and error if there is a typo in the path", () => {
+    return request(app)
+      .get("/api/articles/1/commen")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Path not found");
+      });
+  });
+});
 
 afterAll(() => {
   return connection.end();

@@ -10,7 +10,7 @@ const fetchArticle = (articles_id) => {
     )
     .then((result) => {
       if (result.rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "Article not found" });
+        return Promise.reject({ status: 404, msg: "status 404: Article not found" });
       } else {
         return result.rows;
       }
@@ -50,9 +50,18 @@ const checkIdExists = (article_id) => {
     .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
     .then((result) => {
       if (result.rowCount === 0) {
-        return Promise.reject({ status: 404, msg: "Article not found" });
+        return Promise.reject({ status: 404, msg: "status 404: Article not found" });
       }
     });
+};
+
+const insertComment = (body, username, article_id) => {
+  if(body === '' || username === ''){
+     return Promise.reject({ status: 404, msg: "status 404: Article not found" });
+    } else {
+  return db.query(`INSERT INTO comments (body, author, article_id) 
+  VALUES ($1, $2, $3) RETURNING *`, [body, username, article_id])
+ };
 };
 
 module.exports = {
@@ -60,4 +69,5 @@ module.exports = {
   fetchOrderedArticles,
   fetchComments,
   checkIdExists,
+  insertComment
 };
