@@ -3,6 +3,7 @@ const {
   fetchOrderedArticles,
   fetchComments,
   checkIdExists,
+  insertComment
 } = require("../models/articles.model");
 
 const getArticleById = (req, res, next) => {
@@ -39,5 +40,18 @@ const getComments = (req, res, next) => {
       next(err);
     });
 };
-module.exports = { getArticleById, getArticles, getComments };
+
+const postComment = (req, res, next) => {
+  const { article_id } = req.params;
+  const { username, body } = req.body;
+  insertComment(body, username, article_id)
+  .then((resComment) => {
+    const comment = resComment.rows[0];
+    res.status(201).send({ comment: comment })
+  })
+  .catch((err) => {
+    next(err)
+  })
+}
+module.exports = { getArticleById, getArticles, getComments, postComment };
 
