@@ -57,7 +57,7 @@ const checkIdExists = (article_id) => {
 
 const insertComment = (body, username, article_id) => {
   if(body === '' || username === ''){
-     return Promise.reject({ status: 404, msg: "status 404: Article not found" });
+     return Promise.reject({ status: 404, msg: "status 404: Article not found for this ID number" });
     } else {
   return db.query(`INSERT INTO comments (body, author, article_id) 
   VALUES ($1, $2, $3) RETURNING *`, [body, username, article_id])

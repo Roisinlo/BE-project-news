@@ -182,9 +182,31 @@ describe("POST", () => {
         const { comment } = body;
         expect(comment).toMatchObject({
           comment_id: expect.any(Number),
-          body: expect.any(String),
-          author: expect.any(String),
-          article_id: expect.any(Number),
+          body: "really important words about thoughts",
+          author: "butter_bridge",
+          article_id: 1,
+          votes: expect.any(Number),
+          created_at: expect.any(String)
+        });
+      });
+  });
+  test("POST 201: adds a new comment using username and body from request and ignores any extra properties in body", () => {
+    const testInput = {
+      username: "butter_bridge",
+      body: "really important words about thoughts",
+      votes: 10
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(testInput)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: "really important words about thoughts",
+          author: "butter_bridge",
+          article_id: 1,
           votes: expect.any(Number),
           created_at: expect.any(String)
         });
@@ -200,7 +222,7 @@ describe("POST", () => {
         expect(body.msg).toBe("status 400: invalid request, missing information");
       })
   })
-  test("POST 400: responds with invalid request error message when post request is sent with an empty property in the object", () => {
+  test("POST 400: responds with invalid request error message when post request is sent with an empty body property in the object", () => {
     const testInput = {
       username: "butter_bridge", 
     }
@@ -212,23 +234,44 @@ describe("POST", () => {
         expect(body.msg).toBe("status 400: invalid request, missing information");
       })
   })
-  test("GET 404: responds with message and error if input article_id does not have an article attached", () => {
-    return request(app)
-      .get("/api/articles/300/comments")
+  test("POST 404: responds with invalid request error message when post request is sent with an invalid username", () => {
+    const testInput = {
+      username: "hacker",
+      body: "really important words about thoughts"
+    }
+      return request(app)
+      .post("/api/articles/1/comments")
+      .send(testInput)
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 404: Article not found");
+        expect(body.msg).toBe("status 404: not found");
+      })
+  })
+  test("POST 400: responds with message and error if input article_id is valid but does not have an article attached", () => {
+    return request(app)
+      .post("/api/articles/300/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: invalid request, missing information");
       });
   });
-  test("GET 404: responds with message and error if there is a typo in the path", () => {
+  test("POST 400: responds with error message if input article id is not a number", () => {
     return request(app)
-      .get("/api/articles/1/commen")
+      .post("/api/articles/notanum/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: Invalid article ID");
+      });
+  });
+});
+  test("POST 404: responds with message and error if there is a typo in the path", () => {
+    return request(app)
+      .post("/api/articles/1/commen")
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("status 404: Path not found");
       });
   });
-});
 
 afterAll(() => {
   return connection.end();
