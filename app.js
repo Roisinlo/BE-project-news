@@ -1,6 +1,7 @@
 const express = require("express");
 const { getTopics } = require("./controllers/topics.controller");
 const { getArticleById, getArticles, getComments, postComment, patchArticleVotes } = require("./controllers/articles.controller");
+const { deleteComment } = require("./controllers/comments.controller")
 const {
   handleCustomErrors,
   handlePSQLErrors
@@ -14,9 +15,11 @@ app.get("/api/articles/:articles_id", getArticleById);
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id/comments", getComments);
 
-app.post("/api/articles/:article_id/comments", postComment)
+app.post("/api/articles/:article_id/comments", postComment);
 
-app.patch("/api/articles/:article_id", patchArticleVotes)
+app.patch("/api/articles/:article_id", patchArticleVotes);
+
+app.delete("/api/comments/:comment_id", deleteComment);
 
 app.use(handleCustomErrors);
 app.use(handlePSQLErrors);

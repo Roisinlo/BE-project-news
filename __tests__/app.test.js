@@ -3,6 +3,7 @@ const app = require("../app");
 const data = require("../db/data/test-data/index");
 const connection = require("../db/connection");
 const seed = require("../db/seeds/seed");
+const { checkIdExists } = require("../models/articles.model");
 
 beforeEach(() => {
   return seed(data);
@@ -383,7 +384,40 @@ describe("POST", () => {
   })
 });
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: DELETE should delete comment specified by comment_id and respond with a 204", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+  });
+  test("DELETE 404: responds with message and error if input comment_id is valid but does not have an comment attached", () => {
+    return request(app)
+      .delete("/api/comments/100000")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Comment not found");
+      });
+  });
+  test("DELETE 400: responds with error message if input comment_id is not a number", () => {
+    return request(app)
+      .delete("/api/comments/notanum")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: invalid input");
+      });
+  });
+  test("DELETE 404: responds with message and error if there is a typo in the path", () => {
+    return request(app)
+      .delete("/api/com/1")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Path not found");
+      });
+});
+});
 
 afterAll(() => {
   return connection.end();
 });
+
+//typo
