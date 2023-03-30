@@ -10,7 +10,10 @@ const fetchArticle = (articles_id) => {
     )
     .then((result) => {
       if (result.rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "status 404: Article not found" });
+        return Promise.reject({
+          status: 404,
+          msg: "status 404: Article not found",
+        });
       } else {
         return result.rows;
       }
@@ -42,26 +45,53 @@ const fetchComments = (article_id) => {
     )
     .then((result) => {
       return result.rows;
-      })
-    };
+    });
+};
 
 const checkIdExists = (article_id) => {
   return db
     .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
     .then((result) => {
       if (result.rowCount === 0) {
-        return Promise.reject({ status: 404, msg: "status 404: Article not found" });
+        return Promise.reject({
+          status: 404,
+          msg: "status 404: Article not found",
+        });
       }
     });
 };
 
 const insertComment = (body, username, article_id) => {
-  if(body === '' || username === ''){
-     return Promise.reject({ status: 404, msg: "status 404: Article not found for this ID number" });
-    } else {
-  return db.query(`INSERT INTO comments (body, author, article_id) 
-  VALUES ($1, $2, $3) RETURNING *`, [body, username, article_id])
- };
+  if (body === "" || username === "") {
+    return Promise.reject({
+      status: 404,
+      msg: "status 404: Article not found for this ID number",
+    });
+  } else {
+    return db.query(
+      `INSERT INTO comments (body, author, article_id) 
+  VALUES ($1, $2, $3) RETURNING *`,
+      [body, username, article_id]
+    );
+  }
+};
+
+const addVote = (article_id, inc_votes) => {
+  return db.query(
+    `UPDATE articles
+   SET 
+   votes = votes + $2
+   WHERE article_id = $1
+  RETURNING*`,
+    [article_id, inc_votes]
+  ).then((result) => {
+    if (result.rowCount === 0) {
+      return Promise.reject({
+        status: 404,
+        msg: "status 404: Article not found",
+      });
+    } else {return result.rows[0]}
+  });
 };
 
 module.exports = {
@@ -69,5 +99,6 @@ module.exports = {
   fetchOrderedArticles,
   fetchComments,
   checkIdExists,
-  insertComment
+  insertComment,
+  addVote,
 };

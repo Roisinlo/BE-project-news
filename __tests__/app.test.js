@@ -66,7 +66,7 @@ describe("GET /api/articles/:articles_id", () => {
       .get("/api/articles/notanum")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 400: Invalid article ID");
+        expect(body.msg).toBe("status 400: invalid input");
       });
   });
 });
@@ -146,7 +146,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/not-a-num/comments")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 400: Invalid article ID");
+        expect(body.msg).toBe("status 400: invalid input");
       });
   });
   test("GET 404: responds with message and error if input article_id does not have an article attached", () => {
@@ -247,12 +247,18 @@ describe("POST", () => {
         expect(body.msg).toBe("status 404: not found");
       })
   })
-  test("POST 400: responds with message and error if input article_id is valid but does not have an article attached", () => {
+  test("POST 404: responds with message and error if input article_id is valid but does not have an article attached", () => {
+    const testInput = {
+      username: "butter_bridge",
+      body: "really important words about thoughts",
+      votes: 10
+    };
     return request(app)
       .post("/api/articles/300/comments")
-      .expect(400)
+      .send(testInput)
+      .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 400: invalid request, missing information");
+        expect(body.msg).toBe("status 404: not found");
       });
   });
   test("POST 400: responds with error message if input article id is not a number", () => {
@@ -260,7 +266,7 @@ describe("POST", () => {
       .post("/api/articles/notanum/comments")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 400: Invalid article ID");
+        expect(body.msg).toBe("status 400: invalid input");
       });
   });
 });
@@ -272,6 +278,111 @@ describe("POST", () => {
         expect(body.msg).toBe("status 404: Path not found");
       });
   });
+
+  describe("PATCH", () => {
+    test("PATCH 202: accepts a vote object and adds to votes in the database for specified article in api, returns article object", () => {
+      const testInput = {
+       inc_votes: 3 
+      };
+      return request(app)
+        .patch("/api/articles/1")
+        .send(testInput)
+        .expect(202)
+        .then(({ body }) => {
+           expect(body).toMatchObject({
+            article_id: 1,
+            title: 'Living in the shadow of a great man',
+            topic: 'mitch',
+            author: 'butter_bridge',
+            body: 'I find this existence challenging',
+            created_at: expect.any(String),
+            votes: 103,
+            article_img_url:
+      'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700',
+          });
+        });
+    });
+    test("PATCH 202: accepts a negative number vote object and subtracts from votes in the database for specified article in api and returns that article", () => {
+      const testInput = {
+       inc_votes: -200 
+      };
+      return request(app)
+        .patch("/api/articles/1")
+        .send(testInput)
+        .expect(202)
+        .then(({ body }) => {
+          expect(body).toMatchObject({
+            article_id: 1,
+            title: 'Living in the shadow of a great man',
+            topic: 'mitch',
+            author: 'butter_bridge',
+            body: 'I find this existence challenging',
+            created_at: expect.any(String),
+            votes: -100,
+            article_img_url:
+      'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700',
+          });
+        });
+    });
+    test("PATCH 202: amends votes and ignores any extra properties in body", () => {
+      const testInput = {
+          inc_votes: -200,
+          title: 'My memoir'
+       }
+       return request(app)
+       .patch("/api/articles/1")
+       .send(testInput)
+       .expect(202)
+       .then(({ body }) => {
+         expect(body).toMatchObject({
+           article_id: 1,
+           title: 'Living in the shadow of a great man',
+           topic: 'mitch',
+           author: 'butter_bridge',
+           body: 'I find this existence challenging',
+           created_at: expect.any(String),
+           votes: -100,
+           article_img_url:
+     'https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700',
+         });
+       });
+   });
+    test("PATCH 404: responds with message and error if there is a typo in the path", () => {
+      return request(app)
+        .patch("/api/artles/1")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("status 404: Path not found");
+        });
+  });
+  test("PATCH 400: responds with error message if input article id is not a number", () => {
+    return request(app)
+      .patch("/api/articles/notanum")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: invalid input");
+      });
+  });
+  test("PATCH 404: responds with message and error if input article_id is valid but does not have an article attached", () => {
+    return request(app)
+      .patch("/api/articles/300")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Article not found");
+      });
+  });
+  test("PATCH 400: responds with invalid request error message when patch request is sent with an empty object", () => {
+    const testInput = {}
+      return request(app)
+      .patch("/api/articles/1")
+      .send(testInput)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: invalid request, missing information");
+      })
+  })
+});
+
 
 afterAll(() => {
   return connection.end();
