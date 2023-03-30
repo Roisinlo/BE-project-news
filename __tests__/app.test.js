@@ -416,8 +416,34 @@ describe("DELETE /api/comments/:comment_id", () => {
 });
 });
 
+describe("GET /api/users", () => {
+  test("200: GET responds with an array of user objects", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+        expect(users.length).toBe(4);
+        users.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String)
+          });
+        });
+      });
+  });
+  test("GET 404: responds with bad request if invalid end point", () => {
+    return request(app)
+      .get("/api/uses")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Path not found");
+      });
+  });
+});
+
+
 afterAll(() => {
   return connection.end();
 });
-
-//typo
