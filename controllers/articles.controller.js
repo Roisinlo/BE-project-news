@@ -59,7 +59,7 @@ const patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
   addVote(article_id, inc_votes).then((resArticle) => {
-    res.status(202).send(resArticle);
+    res.status(200).send(resArticle);
   })
   .catch((err) => {
     next(err);

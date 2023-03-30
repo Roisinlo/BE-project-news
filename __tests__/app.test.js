@@ -280,14 +280,14 @@ describe("POST", () => {
   });
 
   describe("PATCH", () => {
-    test("PATCH 202: accepts a vote object and adds to votes in the database for specified article in api, returns article object", () => {
+    test("PATCH 200: accepts a vote object and adds to votes in the database for specified article in api, returns article object", () => {
       const testInput = {
        inc_votes: 3 
       };
       return request(app)
         .patch("/api/articles/1")
         .send(testInput)
-        .expect(202)
+        .expect(200)
         .then(({ body }) => {
            expect(body).toMatchObject({
             article_id: 1,
@@ -302,14 +302,14 @@ describe("POST", () => {
           });
         });
     });
-    test("PATCH 202: accepts a negative number vote object and subtracts from votes in the database for specified article in api and returns that article", () => {
+    test("PATCH 200: accepts a negative number vote object and subtracts from votes in the database for specified article in api and returns that article", () => {
       const testInput = {
        inc_votes: -200 
       };
       return request(app)
         .patch("/api/articles/1")
         .send(testInput)
-        .expect(202)
+        .expect(200)
         .then(({ body }) => {
           expect(body).toMatchObject({
             article_id: 1,
@@ -324,7 +324,7 @@ describe("POST", () => {
           });
         });
     });
-    test("PATCH 202: amends votes and ignores any extra properties in body", () => {
+    test("PATCH 200: amends votes and ignores any extra properties in body", () => {
       const testInput = {
           inc_votes: -200,
           title: 'My memoir'
@@ -332,7 +332,7 @@ describe("POST", () => {
        return request(app)
        .patch("/api/articles/1")
        .send(testInput)
-       .expect(202)
+       .expect(200)
        .then(({ body }) => {
          expect(body).toMatchObject({
            article_id: 1,
