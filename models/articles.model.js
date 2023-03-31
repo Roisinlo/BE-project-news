@@ -19,9 +19,10 @@ const fetchArticle = (articles_id, topic) => {
         if (result.rows.length === 0) {
           return Promise.reject({
             status: 404,
-            msg: "status 404: Article not found",
+            msg: "status 404: not found",
           });
         } else {
+          console.log(result.rows)
           return result.rows;
         }
       });
@@ -50,12 +51,12 @@ selectArticlesQuery += ` GROUP BY articles.article_id`;
   selectArticlesQuery += ` ${order}`;
 
   return db.query(selectArticlesQuery, queryParams).then((result) => {
-    if(result.rows.length === 0){
-      return Promise.reject({
-        status: 404,
-        msg: "status 404: not found",
-      });
-    }
+    // if(result.rows.length === 0){
+    //   return Promise.reject({
+    //     status: 404,
+    //     msg: "status 404: not found",
+    //   });
+    // }
     return result.rows;
   });
 }
@@ -74,7 +75,8 @@ const fetchComments = (article_id) => {
     });
 };
 
-const checkIdExists = (article_id) => {
+const checkExists = (article_id, topic) => {
+  if(article_id){
   return db
     .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
     .then((result) => {
@@ -84,7 +86,22 @@ const checkIdExists = (article_id) => {
           msg: "status 404: Article not found",
         });
       }
-    });
+    }
+    )
+  }
+  if(topic){
+    return db
+    .query(`SELECT * FROM topics WHERE slug = $1`, [topic])
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "status 404: not found",
+        });
+      } 
+    }
+    )
+  }
 };
 
 const insertComment = (body, username, article_id) => {
@@ -128,7 +145,7 @@ module.exports = {
   fetchArticle,
   fetchOrderedArticles,
   fetchComments,
-  checkIdExists,
+  checkExists,
   insertComment,
   addVote,
 };

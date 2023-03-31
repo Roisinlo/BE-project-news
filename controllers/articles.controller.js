@@ -2,7 +2,7 @@ const {
   fetchArticle,
   fetchOrderedArticles,
   fetchComments,
-  checkIdExists,
+  checkExists,
   insertComment,
   addVote,
 } = require("../models/articles.model");
@@ -22,21 +22,31 @@ const getArticles = (req, res, next) => {
   const { topic } = req.query;
   const { sort_by } = req.query
   const { order } = req.query
-
-  fetchOrderedArticles(topic, sort_by, order)
-    .then((articles) => {
-      res.status(200).send({ articles });
-    })
-    .catch((err) => {
-      next(err);
-    });
+console.log('hello')
+  const topicPromises = fetchOrderedArticles(topic, sort_by, order);
+  const topicCheckPromise = checkExists(null, topic);
+  Promise.all([topicPromises, topicCheckPromise])
+  .then(([articles]) => {
+    res.status(200).send({ articles });
+  })
+  .catch((err) => {
+    next(err);
+  });
 };
+
+//   fetchOrderedArticles(topic, sort_by, order)
+//     .then((articles) => {
+//       res.status(200).send({ articles });
+//     })
+//     .catch((err) => {
+//       next(err);
+//     });
+// };
 
 const getComments = (req, res, next) => {
   const { article_id } = req.params;
-
   const commentsPromises = fetchComments(article_id);
-  const checkIdPromise = checkIdExists(article_id);
+  const checkIdPromise = checkExists(article_id);
   Promise.all([commentsPromises, checkIdPromise])
     .then(([comments]) => {
       res.status(200).send({ comments });

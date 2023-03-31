@@ -59,7 +59,7 @@ describe("GET /api/articles/:articles_id", () => {
       .get("/api/articles/324")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 404: Article not found");
+        expect(body.msg).toBe("status 404: not found");
       });
   });
   test("GET 400: responds with error message if input article id is not a number", () => {
@@ -572,6 +572,15 @@ describe("GET /api/articles", () => {
         expect(articles).toBeSortedBy('created_at', { descending: true } );
       });
   });
+  test("200: GET responds with an empty array when queried topic that exists, but has no associated comments", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toEqual([]);
+      });
+  });
   test("GET 200: responds with all queries", () => {
     return request(app)
       .get("/api/articles?topic=mitch&sort_by=title&order=asc")
@@ -594,12 +603,20 @@ describe("GET /api/articles", () => {
         })
       });
   });
-  test("GET 404: responds with message and error if category to sort_by does not exist", () => {
+  test("GET 400: responds with message and error if order query does not exist", () => {
+    return request(app)
+      .get("/api/articles?order=carrots")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: not found");
+      });
+  });
+  test("GET 400: responds with message and error if category to sort_by does not exist", () => {
     return request(app)
       .get("/api/articles?sort_by=carrots")
-      .expect(404)
+      .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 404: not found");
+        expect(body.msg).toBe("status 400: not found");
       });
   });
   test("GET 404: responds with error message if queried topic does not exist", () => {
