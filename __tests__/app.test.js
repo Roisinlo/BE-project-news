@@ -59,7 +59,7 @@ describe("GET /api/articles/:articles_id", () => {
       .get("/api/articles/324")
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("status 404: Article not found");
+        expect(body.msg).toBe("status 404: not found");
       });
   });
   test("GET 400: responds with error message if input article id is not a number", () => {
@@ -68,47 +68,6 @@ describe("GET /api/articles/:articles_id", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("status 400: invalid input");
-      });
-  });
-});
-
-describe("GET /api/articles", () => {
-  test("200: GET responds with an array of article objects", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        const { articles } = body;
-        expect(articles.length).toBe(12);
-        articles.forEach((article) => {
-          expect(article).toMatchObject({
-            author: expect.any(String),
-            title: expect.any(String),
-            article_id: expect.any(Number),
-            topic: expect.any(String),
-            created_at: expect.any(String),
-            votes: expect.any(Number),
-            article_img_url: expect.any(String),
-            comment_count: expect.any(String),
-          });
-        });
-      });
-  });
-  test("200: GET responds with an array of article objects ordered by date in descending order", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        const { articles } = body;
-        expect(articles).toBeSortedBy("created_at", { descending: true });
-      });
-  });
-  test("GET 404: responds with message and error for invalid end point", () => {
-    return request(app)
-      .get("/api/article")
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toBe("status 404: Path not found");
       });
   });
 });
@@ -442,6 +401,241 @@ describe("GET /api/users", () => {
       });
   });
 });
+
+describe("GET /api/articles", () => {
+  test("200: GET responds with an array of article objects", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles.length).toBe(12);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("200: GET responds with an array of article objects ordered by date in descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("GET 404: responds with message and error for invalid end point", () => {
+    return request(app)
+      .get("/api/artes")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Path not found");
+      });
+  });
+  test("200: GET responds with an array of user objects of articles with only queried topics", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles.length).toBe(11);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: 'mitch',
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number)
+          });
+        });
+      });
+  });
+  test("200: GET responds with an array of user objects according to queried topic", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles.length).toBe(1);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: 'cats',
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("GET 404: responds with message and error if queried topic does not exist", () => {
+    return request(app)
+      .get("/api/articles?topic=256")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: not found");
+      });
+  });
+  test("GET 200: responds with all articles ordered by date(created_at) as default (no query)", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy("created_at", { descending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered by title, descending as default", () => {
+    return request(app)
+      .get("/api/articles?sort_by=title")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy("title", { descending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered by topic as default order descending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=topic")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy("topic", { descending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered by author as default order descending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy("author", { descending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered by votes as default order descending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy("votes", { descending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered by article_img_url as default order descending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=article_img_url")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy("article_img_url", { descending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered by comment_count as default order descending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=comment_count")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy("comment_count", { descending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered ascending", () => {
+    return request(app)
+      .get("/api/articles?order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy('created_at', { ascending: true } );
+      });
+  });
+  test("GET 200: responds with all articles ordered descending", () => {
+    return request(app)
+      .get("/api/articles?order=desc")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles }= body;
+        expect(articles).toBeSortedBy('created_at', { descending: true } );
+      });
+  });
+  test("200: GET responds with an empty array when queried topic that exists, but has no associated comments", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toEqual([]);
+      });
+  });
+  test("GET 200: responds with all queries", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=title&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSortedBy('title', { ascending: true } );
+        expect(articles.length).toBe(11);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: 'mitch',
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        })
+      });
+  });
+  test("GET 400: responds with message and error if order query does not exist", () => {
+    return request(app)
+      .get("/api/articles?order=carrots")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: not found");
+      });
+  });
+  test("GET 400: responds with message and error if category to sort_by does not exist", () => {
+    return request(app)
+      .get("/api/articles?sort_by=carrots")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 400: not found");
+      });
+  });
+  test("GET 404: responds with error message if queried topic does not exist", () => {
+    return request(app)
+    .get("/api/articles?topic=dogs")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: not found");
+      });
+  });
+  test("GET 404: responds with message and error if there is a typo in the path", () => {
+    return request(app)
+      .delete("/api/ares?topic=dogs")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("status 404: Path not found");
+      });
+});
+})
 
 
 afterAll(() => {
