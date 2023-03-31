@@ -19,7 +19,11 @@ const getArticleById = (req, res, next) => {
 };
 
 const getArticles = (req, res, next) => {
-  fetchOrderedArticles()
+  const { topic } = req.query;
+  const { sort_by } = req.query
+  const { order } = req.query
+
+  fetchOrderedArticles(topic, sort_by, order)
     .then((articles) => {
       res.status(200).send({ articles });
     })
