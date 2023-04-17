@@ -3,7 +3,7 @@ const db = require("../db/connection");
 const fetchArticle = (articles_id, topic) => {
   if (topic) {
     return db
-      .query(`SELECT * FROM articles WHERE topic = $1`, [topic])
+      .query(`SELECT * FROM articles WHERE topic = $1 `, [topic])
       .then((result) => {
         return result.rows;
       });

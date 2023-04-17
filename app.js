@@ -8,8 +8,12 @@ const {
   handlePSQLErrors
 } = require("./controllers/errorhandler.controller");
 
+const cors = require('cors');
+
+
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:articles_id", getArticleById);
